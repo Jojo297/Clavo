@@ -1,0 +1,50 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="80dp"
+    android:viewportWidth="200"
+    android:viewportHeight="80">
+
+    <!-- Lingkaran Oranye -->
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M40,40m-30,0a30,30 0 1,0 60,0a30,30 0 1,0 -60,0"
+        android:fillType="nonZero" />
+
+    <!-- Ilustrasi Cengkeh (disederhanakan sebagai dua batang silang) -->
+    <path
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:fillColor="#000000"
+        android:pathData="M30,30L45,50M35,25L50,45"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Teks "CLAVO" sebagai bentuk path vector (hanya sebagai representasi kasar) -->
+    <!-- Gunakan font path generator atau SVG-to-VectorDrawable tool untuk versi akurat -->
+
+    <!-- Huruf C -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M70,50c-5,0 -10,-5 -10,-10s5,-10 10,-10h5v5h-5c-2.5,0 -5,2.5 -5,5s2.5,5 5,5h5v5h-5z" />
+
+    <!-- Huruf L -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M80,30h5v15h10v5h-15z" />
+
+    <!-- Huruf A -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M100,50l5,-20l5,20h-3l-1,-5h-4l-1,5zM104,40h3l-1.5,-7z" />
+
+    <!-- Huruf V -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M115,30l5,20l5,-20h-3l-2,10l-2,-10z" />
+
+    <!-- Huruf O -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M130,50c-5,0 -5,-20 0,-20c5,0 5,20 0,20z" />
+
+</vector>
