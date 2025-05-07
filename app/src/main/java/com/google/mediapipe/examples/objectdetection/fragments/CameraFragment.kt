@@ -148,122 +148,127 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
             // Wait for the views to be properly laid out
             fragmentCameraBinding.viewFinder.post {
                 // Set up the camera and its use cases
-                setUpCamera()
+                if (isAdded && _fragmentCameraBinding != null) {
+                    fragmentCameraBinding.viewFinder.post {
+                        setUpCamera()
+                    }
+                }
+
             }
         }
 
         // Attach listeners to UI control widgets
-        initBottomSheetControls()
+//        initBottomSheetControls()
         fragmentCameraBinding.overlay.setRunningMode(RunningMode.LIVE_STREAM)
     }
 
-    private fun initBottomSheetControls() {
-        // Init bottom sheet settings
-        fragmentCameraBinding.bottomSheetLayout.maxResultsValue.text =
-            viewModel.currentMaxResults.toString()
-        fragmentCameraBinding.bottomSheetLayout.thresholdValue.text =
-            String.format("%.2f", viewModel.currentThreshold)
-
-        // When clicked, lower detection score threshold floor
-        fragmentCameraBinding.bottomSheetLayout.thresholdMinus.setOnClickListener {
-            if (objectDetectorHelper.threshold >= 0.1) {
-                objectDetectorHelper.threshold -= 0.1f
-                updateControlsUi()
-            }
-        }
-
-        // When clicked, raise detection score threshold floor
-        fragmentCameraBinding.bottomSheetLayout.thresholdPlus.setOnClickListener {
-            if (objectDetectorHelper.threshold <= 0.8) {
-                objectDetectorHelper.threshold += 0.1f
-                updateControlsUi()
-            }
-        }
-
-        // When clicked, reduce the number of objects that can be detected at a time
-        fragmentCameraBinding.bottomSheetLayout.maxResultsMinus.setOnClickListener {
-            if (objectDetectorHelper.maxResults > 1) {
-                objectDetectorHelper.maxResults--
-                updateControlsUi()
-            }
-        }
-
-        // When clicked, increase the number of objects that can be detected at a time
-        fragmentCameraBinding.bottomSheetLayout.maxResultsPlus.setOnClickListener {
-            if (objectDetectorHelper.maxResults < 5) {
-                objectDetectorHelper.maxResults++
-                updateControlsUi()
-            }
-        }
-
-        // When clicked, change the underlying hardware used for inference. Current options are CPU
-        // GPU, and NNAPI
-        fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(
-            viewModel.currentDelegate,
-            false
-        )
-        fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    p0: AdapterView<*>?,
-                    p1: View?,
-                    p2: Int,
-                    p3: Long
-                ) {
-                    try {
-                        objectDetectorHelper.currentDelegate = p2
-                        updateControlsUi()
-                    } catch(e: UninitializedPropertyAccessException) {
-                        Log.e(TAG, "ObjectDetectorHelper has not been initialized yet.")
-                    }
-                }
-
-                override fun onNothingSelected(p0: AdapterView<*>?) {
-                    /* no op */
-                }
-            }
-
-        // When clicked, change the underlying model used for object detection
-        fragmentCameraBinding.bottomSheetLayout.spinnerModel.setSelection(
-            viewModel.currentModel,
-            false
-        )
-        fragmentCameraBinding.bottomSheetLayout.spinnerModel.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    p0: AdapterView<*>?,
-                    p1: View?,
-                    p2: Int,
-                    p3: Long
-                ) {
-                    try {
-                        objectDetectorHelper.currentModel = p2
-                        updateControlsUi()
-                    } catch(e: UninitializedPropertyAccessException) {
-                        Log.e(TAG, "ObjectDetectorHelper has not been initialized yet.")
-                    }
-                }
-
-                override fun onNothingSelected(p0: AdapterView<*>?) {
-                    /* no op */
-                }
-            }
-    }
+//    private fun initBottomSheetControls() {
+//        // Init bottom sheet settings
+//        fragmentCameraBinding.bottomSheetLayout.maxResultsValue.text =
+//            viewModel.currentMaxResults.toString()
+//        fragmentCameraBinding.bottomSheetLayout.thresholdValue.text =
+//            String.format("%.2f", viewModel.currentThreshold)
+//
+//        // When clicked, lower detection score threshold floor
+//        fragmentCameraBinding.bottomSheetLayout.thresholdMinus.setOnClickListener {
+//            if (objectDetectorHelper.threshold >= 0.1) {
+//                objectDetectorHelper.threshold -= 0.1f
+//                updateControlsUi()
+//            }
+//        }
+//
+//        // When clicked, raise detection score threshold floor
+//        fragmentCameraBinding.bottomSheetLayout.thresholdPlus.setOnClickListener {
+//            if (objectDetectorHelper.threshold <= 0.8) {
+//                objectDetectorHelper.threshold += 0.1f
+//                updateControlsUi()
+//            }
+//        }
+//
+//        // When clicked, reduce the number of objects that can be detected at a time
+//        fragmentCameraBinding.bottomSheetLayout.maxResultsMinus.setOnClickListener {
+//            if (objectDetectorHelper.maxResults > 1) {
+//                objectDetectorHelper.maxResults--
+//                updateControlsUi()
+//            }
+//        }
+//
+//        // When clicked, increase the number of objects that can be detected at a time
+//        fragmentCameraBinding.bottomSheetLayout.maxResultsPlus.setOnClickListener {
+//            if (objectDetectorHelper.maxResults < 5) {
+//                objectDetectorHelper.maxResults++
+//                updateControlsUi()
+//            }
+//        }
+//
+//        // When clicked, change the underlying hardware used for inference. Current options are CPU
+//        // GPU, and NNAPI
+//        fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(
+//            viewModel.currentDelegate,
+//            false
+//        )
+//        fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.onItemSelectedListener =
+//            object : AdapterView.OnItemSelectedListener {
+//                override fun onItemSelected(
+//                    p0: AdapterView<*>?,
+//                    p1: View?,
+//                    p2: Int,
+//                    p3: Long
+//                ) {
+//                    try {
+//                        objectDetectorHelper.currentDelegate = p2
+//                        updateControlsUi()
+//                    } catch(e: UninitializedPropertyAccessException) {
+//                        Log.e(TAG, "ObjectDetectorHelper has not been initialized yet.")
+//                    }
+//                }
+//
+//                override fun onNothingSelected(p0: AdapterView<*>?) {
+//                    /* no op */
+//                }
+//            }
+//
+//        // When clicked, change the underlying model used for object detection
+//        fragmentCameraBinding.bottomSheetLayout.spinnerModel.setSelection(
+//            viewModel.currentModel,
+//            false
+//        )
+//        fragmentCameraBinding.bottomSheetLayout.spinnerModel.onItemSelectedListener =
+//            object : AdapterView.OnItemSelectedListener {
+//                override fun onItemSelected(
+//                    p0: AdapterView<*>?,
+//                    p1: View?,
+//                    p2: Int,
+//                    p3: Long
+//                ) {
+//                    try {
+//                        objectDetectorHelper.currentModel = p2
+//                        updateControlsUi()
+//                    } catch(e: UninitializedPropertyAccessException) {
+//                        Log.e(TAG, "ObjectDetectorHelper has not been initialized yet.")
+//                    }
+//                }
+//
+//                override fun onNothingSelected(p0: AdapterView<*>?) {
+//                    /* no op */
+//                }
+//            }
+//    }
 
     // Update the values displayed in the bottom sheet. Reset detector.
-    private fun updateControlsUi() {
-        fragmentCameraBinding.bottomSheetLayout.maxResultsValue.text =
-            objectDetectorHelper.maxResults.toString()
-        fragmentCameraBinding.bottomSheetLayout.thresholdValue.text =
-            String.format("%.2f", objectDetectorHelper.threshold)
-
-        backgroundExecutor.execute {
-            objectDetectorHelper.clearObjectDetector()
-            objectDetectorHelper.setupObjectDetector()
-        }
-
-        fragmentCameraBinding.overlay.clear()
-    }
+//    private fun updateControlsUi() {
+//        fragmentCameraBinding.bottomSheetLayout.maxResultsValue.text =
+//            objectDetectorHelper.maxResults.toString()
+//        fragmentCameraBinding.bottomSheetLayout.thresholdValue.text =
+//            String.format("%.2f", objectDetectorHelper.threshold)
+//
+//        backgroundExecutor.execute {
+//            objectDetectorHelper.clearObjectDetector()
+//            objectDetectorHelper.setupObjectDetector()
+//        }
+//
+//        fragmentCameraBinding.overlay.clear()
+//    }
 
     // Initialize CameraX, and prepare to bind the camera use cases
     private fun setUpCamera() {
@@ -350,8 +355,8 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
     override fun onResults(resultBundle: ObjectDetectorHelper.ResultBundle) {
         activity?.runOnUiThread {
             if (_fragmentCameraBinding != null) {
-                fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
-                    String.format("%d ms", resultBundle.inferenceTime)
+//                fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
+//                    String.format("%d ms", resultBundle.inferenceTime)
 
                 // Pass necessary information to OverlayView for drawing on the canvas
                 val detectionResult = resultBundle.results[0]
@@ -374,9 +379,9 @@ class CameraFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
         activity?.runOnUiThread {
             Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
             if (errorCode == ObjectDetectorHelper.GPU_ERROR) {
-                fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(
-                    ObjectDetectorHelper.DELEGATE_CPU, false
-                )
+//                fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(
+//                    ObjectDetectorHelper.DELEGATE_CPU, false
+//                )
             }
         }
     }

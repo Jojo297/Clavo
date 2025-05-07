@@ -93,7 +93,7 @@ class GalleryFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
             getContent.launch(arrayOf("image/*", "video/*"))
         }
 
-        initBottomSheetControls()
+//        initBottomSheetControls()
     }
 
     override fun onPause() {
@@ -105,108 +105,108 @@ class GalleryFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
         super.onPause()
     }
 
-    private fun initBottomSheetControls() {
-        updateControlsUi()
-        // When clicked, lower detection score threshold floor
-        fragmentGalleryBinding.bottomSheetLayout.thresholdMinus.setOnClickListener {
-            if (viewModel.currentThreshold >= 0.1) {
-                viewModel.setThreshold(viewModel.currentThreshold - 0.1f)
-                updateControlsUi()
-            }
-        }
-
-        // When clicked, raise detection score threshold floor
-        fragmentGalleryBinding.bottomSheetLayout.thresholdPlus.setOnClickListener {
-            if (viewModel.currentThreshold <= 0.8) {
-                viewModel.setThreshold(viewModel.currentThreshold + 0.1f)
-                updateControlsUi()
-            }
-        }
-
-        // When clicked, reduce the number of objects that can be detected at a time
-        fragmentGalleryBinding.bottomSheetLayout.maxResultsMinus.setOnClickListener {
-            if (viewModel.currentMaxResults > 1) {
-                viewModel.setMaxResults(viewModel.currentMaxResults - 1)
-                updateControlsUi()
-            }
-        }
-
-        // When clicked, increase the number of objects that can be detected at a time
-        fragmentGalleryBinding.bottomSheetLayout.maxResultsPlus.setOnClickListener {
-            if (viewModel.currentMaxResults < 5) {
-                viewModel.setMaxResults(viewModel.currentMaxResults + 1)
-                updateControlsUi()
-            }
-        }
-
-        // When clicked, change the underlying hardware used for inference. Current options are CPU
-        // GPU, and NNAPI
-        fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.setSelection(
-            viewModel.currentDelegate,
-            false
-        )
-        fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    p0: AdapterView<*>?,
-                    p1: View?,
-                    p2: Int,
-                    p3: Long
-                ) {
-
-                    viewModel.setDelegate(p2)
-                    updateControlsUi()
-                }
-
-                override fun onNothingSelected(p0: AdapterView<*>?) {
-                    /* no op */
-                }
-            }
-
-        // When clicked, change the underlying model used for object detection
-        fragmentGalleryBinding.bottomSheetLayout.spinnerModel.setSelection(
-            viewModel.currentModel,
-            false
-        )
-        fragmentGalleryBinding.bottomSheetLayout.spinnerModel.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    p0: AdapterView<*>?,
-                    p1: View?,
-                    p2: Int,
-                    p3: Long
-                ) {
-                    viewModel.setModel(p2)
-                    updateControlsUi()
-                }
-
-                override fun onNothingSelected(p0: AdapterView<*>?) {
-                    /* no op */
-                }
-            }
-    }
+//    private fun initBottomSheetControls() {
+//        updateControlsUi()
+//        // When clicked, lower detection score threshold floor
+//        fragmentGalleryBinding.bottomSheetLayout.thresholdMinus.setOnClickListener {
+//            if (viewModel.currentThreshold >= 0.1) {
+//                viewModel.setThreshold(viewModel.currentThreshold - 0.1f)
+//                updateControlsUi()
+//            }
+//        }
+//
+//        // When clicked, raise detection score threshold floor
+//        fragmentGalleryBinding.bottomSheetLayout.thresholdPlus.setOnClickListener {
+//            if (viewModel.currentThreshold <= 0.8) {
+//                viewModel.setThreshold(viewModel.currentThreshold + 0.1f)
+//                updateControlsUi()
+//            }
+//        }
+//
+//        // When clicked, reduce the number of objects that can be detected at a time
+//        fragmentGalleryBinding.bottomSheetLayout.maxResultsMinus.setOnClickListener {
+//            if (viewModel.currentMaxResults > 1) {
+//                viewModel.setMaxResults(viewModel.currentMaxResults - 1)
+//                updateControlsUi()
+//            }
+//        }
+//
+//        // When clicked, increase the number of objects that can be detected at a time
+//        fragmentGalleryBinding.bottomSheetLayout.maxResultsPlus.setOnClickListener {
+//            if (viewModel.currentMaxResults < 5) {
+//                viewModel.setMaxResults(viewModel.currentMaxResults + 1)
+//                updateControlsUi()
+//            }
+//        }
+//
+//        // When clicked, change the underlying hardware used for inference. Current options are CPU
+//        // GPU, and NNAPI
+//        fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.setSelection(
+//            viewModel.currentDelegate,
+//            false
+//        )
+//        fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.onItemSelectedListener =
+//            object : AdapterView.OnItemSelectedListener {
+//                override fun onItemSelected(
+//                    p0: AdapterView<*>?,
+//                    p1: View?,
+//                    p2: Int,
+//                    p3: Long
+//                ) {
+//
+//                    viewModel.setDelegate(p2)
+//                    updateControlsUi()
+//                }
+//
+//                override fun onNothingSelected(p0: AdapterView<*>?) {
+//                    /* no op */
+//                }
+//            }
+//
+//        // When clicked, change the underlying model used for object detection
+//        fragmentGalleryBinding.bottomSheetLayout.spinnerModel.setSelection(
+//            viewModel.currentModel,
+//            false
+//        )
+//        fragmentGalleryBinding.bottomSheetLayout.spinnerModel.onItemSelectedListener =
+//            object : AdapterView.OnItemSelectedListener {
+//                override fun onItemSelected(
+//                    p0: AdapterView<*>?,
+//                    p1: View?,
+//                    p2: Int,
+//                    p3: Long
+//                ) {
+//                    viewModel.setModel(p2)
+//                    updateControlsUi()
+//                }
+//
+//                override fun onNothingSelected(p0: AdapterView<*>?) {
+//                    /* no op */
+//                }
+//            }
+//    }
 
     // Update the values displayed in the bottom sheet. Reset detector.
-    private fun updateControlsUi() {
-        if (fragmentGalleryBinding.videoView.isPlaying) {
-            fragmentGalleryBinding.videoView.stopPlayback()
-        }
-        fragmentGalleryBinding.videoView.visibility = View.GONE
-        fragmentGalleryBinding.imageResult.visibility = View.GONE
-        fragmentGalleryBinding.overlay.clear()
-        fragmentGalleryBinding.bottomSheetLayout.maxResultsValue.text =
-            viewModel.currentMaxResults.toString()
-        fragmentGalleryBinding.bottomSheetLayout.thresholdValue.text =
-            String.format("%.2f", viewModel.currentThreshold)
-
-        fragmentGalleryBinding.overlay.clear()
-        fragmentGalleryBinding.tvPlaceholder.visibility = View.VISIBLE
-    }
+//    private fun updateControlsUi() {
+//        if (fragmentGalleryBinding.videoView.isPlaying) {
+//            fragmentGalleryBinding.videoView.stopPlayback()
+//        }
+//        fragmentGalleryBinding.videoView.visibility = View.GONE
+//        fragmentGalleryBinding.imageResult.visibility = View.GONE
+//        fragmentGalleryBinding.overlay.clear()
+//        fragmentGalleryBinding.bottomSheetLayout.maxResultsValue.text =
+//            viewModel.currentMaxResults.toString()
+//        fragmentGalleryBinding.bottomSheetLayout.thresholdValue.text =
+//            String.format("%.2f", viewModel.currentThreshold)
+//
+//        fragmentGalleryBinding.overlay.clear()
+//        fragmentGalleryBinding.tvPlaceholder.visibility = View.VISIBLE
+//    }
 
     // Load and display the image.
     private fun runDetectionOnImage(uri: Uri) {
         fragmentGalleryBinding.overlay.setRunningMode(RunningMode.IMAGE)
-        setUiEnabled(false)
+//        setUiEnabled(false)
         backgroundExecutor = Executors.newSingleThreadScheduledExecutor()
         updateDisplayView(MediaType.IMAGE)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -249,12 +249,12 @@ class GalleryFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
                                     resultBundle.inputImageRotation
                                 )
 
-                                setUiEnabled(true)
-                                fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
-                                    String.format(
-                                        "%d ms",
-                                        resultBundle.inferenceTime
-                                    )
+//                                setUiEnabled(true)
+//                                fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
+//                                    String.format(
+//                                        "%d ms",
+//                                        resultBundle.inferenceTime
+//                                    )
                             }
                         } ?: run {
                         Log.e(TAG, "Error running object detection.")
@@ -267,7 +267,7 @@ class GalleryFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
 
     private fun runDetectionOnVideo(uri: Uri) {
         fragmentGalleryBinding.overlay.setRunningMode(RunningMode.VIDEO)
-        setUiEnabled(false)
+//        setUiEnabled(false)
         updateDisplayView(MediaType.VIDEO)
 
         with(fragmentGalleryBinding.videoView) {
@@ -339,10 +339,10 @@ class GalleryFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
                             result.inputImageRotation
                         )
 
-                        setUiEnabled(true)
+//                        setUiEnabled(true)
 
-                        fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
-                            String.format("%d ms", result.inferenceTime)
+//                        fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
+//                            String.format("%d ms", result.inferenceTime)
                     }
                 }
             },
@@ -373,26 +373,26 @@ class GalleryFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
         return MediaType.UNKNOWN
     }
 
-    private fun setUiEnabled(enabled: Boolean) {
-        fragmentGalleryBinding.fabGetContent.isEnabled = enabled
-        fragmentGalleryBinding.bottomSheetLayout.spinnerModel.isEnabled =
-            enabled
-        fragmentGalleryBinding.bottomSheetLayout.thresholdMinus.isEnabled =
-            enabled
-        fragmentGalleryBinding.bottomSheetLayout.thresholdPlus.isEnabled =
-            enabled
-        fragmentGalleryBinding.bottomSheetLayout.maxResultsMinus.isEnabled =
-            enabled
-        fragmentGalleryBinding.bottomSheetLayout.maxResultsPlus.isEnabled =
-            enabled
-        fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.isEnabled =
-            enabled
-    }
+//    private fun setUiEnabled(enabled: Boolean) {
+//        fragmentGalleryBinding.fabGetContent.isEnabled = enabled
+//        fragmentGalleryBinding.bottomSheetLayout.spinnerModel.isEnabled =
+//            enabled
+//        fragmentGalleryBinding.bottomSheetLayout.thresholdMinus.isEnabled =
+//            enabled
+//        fragmentGalleryBinding.bottomSheetLayout.thresholdPlus.isEnabled =
+//            enabled
+//        fragmentGalleryBinding.bottomSheetLayout.maxResultsMinus.isEnabled =
+//            enabled
+//        fragmentGalleryBinding.bottomSheetLayout.maxResultsPlus.isEnabled =
+//            enabled
+//        fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.isEnabled =
+//            enabled
+//    }
 
     private fun detectError() {
         activity?.runOnUiThread {
             fragmentGalleryBinding.progress.visibility = View.GONE
-            setUiEnabled(true)
+//            setUiEnabled(true)
             updateDisplayView(MediaType.UNKNOWN)
         }
     }
@@ -402,9 +402,9 @@ class GalleryFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
         activity?.runOnUiThread {
             Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
             if (errorCode == ObjectDetectorHelper.GPU_ERROR) {
-                fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.setSelection(
-                    ObjectDetectorHelper.DELEGATE_CPU, false
-                )
+//                fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.setSelection(
+//                    ObjectDetectorHelper.DELEGATE_CPU, false
+//                )
             }
         }
     }

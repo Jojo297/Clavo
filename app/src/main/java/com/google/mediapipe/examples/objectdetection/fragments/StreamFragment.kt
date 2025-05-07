@@ -18,6 +18,7 @@ import android.webkit.WebViewClient
 import android.widget.Button
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.google.mediapipe.examples.objectdetection.ObjectDetectorHelper
 import com.google.mediapipe.examples.objectdetection.databinding.FragmentStreamBinding
 import com.google.mediapipe.framework.image.BitmapImageBuilder
@@ -26,6 +27,10 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetectionResult
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetector
 import com.longdo.mjpegviewer.MjpegView
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
 import java.nio.ByteBuffer
@@ -83,22 +88,18 @@ class StreamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
         binding.overlay.setRunningMode(RunningMode.LIVE_STREAM)
     }
 
-    private fun startRealTimeDetection() {
-        if (executor.isShutdown) return
+    private var detectionJob: Job? = null
 
-        executor.execute {
-            while (!executor.isShutdown) {
-                try {
-                    captureAndDetect()
-                    Thread.sleep(detectionInterval)
-                } catch (e: InterruptedException) {
-                    break // keluar dari loop dengan aman
-                } catch (e: Exception) {
-                    e.printStackTrace() // Hindari crash total
-                }
+    private fun startRealTimeDetection() {
+        detectionJob?.cancel() // pastikan hanya satu job berjalan
+        detectionJob = viewLifecycleOwner.lifecycleScope.launch {
+            while (isActive) {
+                captureAndDetect()
+                delay(detectionInterval)
             }
         }
     }
+
 
 
 
@@ -147,7 +148,7 @@ class StreamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
 
     override fun onPause() {
         super.onPause()
-        handler.removeCallbacks(detectionRunnable)
+        detectionJob?.cancel()
         binding.mjpegView.stopStream()
     }
 
@@ -165,16 +166,17 @@ class StreamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
         super.onResume()
         if (::objectDetectorHelper.isInitialized) {
             binding.mjpegView.startStream()
-            handler.post(detectionRunnable) // start detection
+            startRealTimeDetection()
         }
     }
 
 
 
 
+
     override fun onDestroyView() {
         super.onDestroyView()
-        handler.removeCallbacks(detectionRunnable)
+        detectionJob?.cancel()
         objectDetectorHelper.clearObjectDetector()
         _binding = null
     }
