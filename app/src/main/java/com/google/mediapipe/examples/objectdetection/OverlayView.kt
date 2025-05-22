@@ -194,16 +194,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                 )
             }
         }
-//        scaleFactor = when (runningMode) {
-//            RunningMode.IMAGE,
-//            RunningMode.VIDEO,
-//            RunningMode.LIVE_STREAM -> {
-//                min(
-//                    previewWidth.toFloat() / rotatedWidthHeight.first,
-//                    previewHeight.toFloat() / rotatedWidthHeight.second
-//                )
-//            }
-//        }
         invalidate()
     }
 
