@@ -21,9 +21,14 @@
         android:title="@string/menu_camera" />
 
     <item
+        android:id="@id/webcam_fragment"
+        android:icon="@drawable/webcam"
+        android:title="@string/webcam" />
+
+    <item
         android:id="@+id/stream_fragment"
         android:icon="@drawable/icons8_motherboard_24"
-        android:title="Clavo Hardware" />
+        android:title="@string/clavo_hardware" />
 
     <item
         android:id="@id/gallery_fragment"

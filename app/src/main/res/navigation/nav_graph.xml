@@ -64,5 +64,11 @@
         android:name="com.google.mediapipe.examples.objectdetection.fragments.StreamFragment"
         android:label="StreamFragment" />
 
+    <!-- Stream Fragment (Webcam) -->
+    <fragment
+        android:id="@+id/webcam_fragment"
+        android:name="com.google.mediapipe.examples.objectdetection.fragments.WebcamFragment"
+        android:label="WebcamFragment" />
+
 
 </navigation>
