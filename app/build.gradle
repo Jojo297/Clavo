@@ -57,6 +57,7 @@ android {
     androidResources {
         noCompress 'tflite'
     }
+    namespace 'com.google.mediapipe.examples.objectdetection'
 
 }
 
@@ -121,4 +122,9 @@ dependencies {
 
     // MJPEG Viewer
     implementation 'com.perthcpe23.dev:android-mjpeg-view:1.1.2'
+
+    // USB Webcam
+    implementation 'com.github.jiangdongguo:AndroidUSBCamera:3.3.3'
+
+
 }

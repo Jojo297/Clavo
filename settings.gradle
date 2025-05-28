@@ -1,8 +1,21 @@
-include ':app'
-dependencyResolutionManagement {
+pluginManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://jitpack.io' } // Pastikan ini ada
+        maven { url 'https://jitpack.io' }
+        maven { url 'https://maven.aliyun.com/repository/public/' }
     }
 }
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+        maven { url 'https://maven.aliyun.com/repository/public/' }
+    }
+}
+
+include ':app'
+include ':libuvccamera'
