@@ -29,6 +29,9 @@ android {
         targetSdkVersion 33
         versionCode 1
         versionName "1.0.0"
+
+        buildConfigField "String", "API_KEY", "\"${project.property("API_KEY")}\""
+
     }
 
     dataBinding {
@@ -125,6 +128,8 @@ dependencies {
 
     // USB Webcam
     implementation 'com.github.jiangdongguo:AndroidUSBCamera:3.3.3'
+
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
 
 }

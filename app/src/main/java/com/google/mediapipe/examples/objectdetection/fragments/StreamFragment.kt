@@ -19,6 +19,7 @@ import android.widget.Button
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.google.mediapipe.examples.objectdetection.BuildConfig
 import com.google.mediapipe.examples.objectdetection.ObjectDetectorHelper
 import com.google.mediapipe.examples.objectdetection.databinding.FragmentStreamBinding
 import com.google.mediapipe.framework.image.BitmapImageBuilder
@@ -78,24 +79,23 @@ class StreamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
 
     // Configure the MJPEG view and start streaming
     private fun setupMjpegView() {
+        val apiKey = BuildConfig.API_KEY
+        val streamUrl = "http://192.168.4.1/stream"
+
         binding.mjpegView.apply {
-            setMode(MjpegView.MODE_FIT_WIDTH)
-            setAdjustHeight(true)
-            setSupportPinchZoomAndPan(true)
-            setUrl("http://192.168.4.1/stream")
+            setStreamUrl(streamUrl, apiKey)
             startStream()
 
-            // Set the preview area for drawing detection results
-            binding.mjpegView.doOnLayout {
+            doOnLayout {
                 binding.overlay.setPreviewLayout(
                     it.left, it.top, it.width, it.height
                 )
             }
-
         }
-        // Start real-time detection loop
+
         startRealTimeDetection()
     }
+
 
     // Configure the overlay view to use LIVE_STREAM mode
     private fun setupOverlayView() {

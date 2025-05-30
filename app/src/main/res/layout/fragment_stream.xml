@@ -16,7 +16,7 @@
             android:layout_width="400dp"
             android:layout_height="300dp">
 
-            <com.longdo.mjpegviewer.MjpegView
+            <com.google.mediapipe.examples.objectdetection.CustomMjpegView
                 android:id="@+id/mjpegView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
