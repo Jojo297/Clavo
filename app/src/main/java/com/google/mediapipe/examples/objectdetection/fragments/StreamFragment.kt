@@ -1,5 +1,6 @@
 package com.google.mediapipe.examples.objectdetection.fragments
 
+import android.app.AlertDialog
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -16,17 +17,20 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
+import androidx.core.content.ContextCompat
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.mediapipe.examples.objectdetection.BuildConfig
 import com.google.mediapipe.examples.objectdetection.ObjectDetectorHelper
+import com.google.mediapipe.examples.objectdetection.R
 import com.google.mediapipe.examples.objectdetection.databinding.FragmentStreamBinding
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetectionResult
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetector
+import com.jiangdg.ausbc.utils.ToastUtils.show
 import com.longdo.mjpegviewer.MjpegView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -62,6 +66,28 @@ class StreamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentStreamBinding.inflate(inflater, container, false)
+
+        // dialog how to use
+        AlertDialog.Builder(requireContext())
+            .setTitle("🔌 Hubungkan Clavo Hardware")
+            .setMessage(
+                "1. Nyalakan perangkat Clavo Hardware\n\n" +
+                        "2. Sambungkan ke jaringan WiFi bernama \"Clavo Hardware\"\n\n" +
+                        "3. Kembali ke aplikasi ini untuk melanjutkan"
+            )
+            .setIcon(R.drawable.ic_wifi)
+            .setPositiveButton("Saya Mengerti") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setCancelable(false)
+            .create()
+            .apply {
+                show()
+                getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.mp_primary)
+                )
+            }
+
         setupObjectDetector()
         setupMjpegView()
         setupOverlayView()
