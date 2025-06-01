@@ -35,6 +35,9 @@ import com.google.mediapipe.tasks.vision.core.ImageProcessingOptions
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetector
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetectorResult
+import java.io.FileInputStream
+import java.nio.ByteBuffer
+import java.nio.channels.FileChannel
 
 class ObjectDetectorHelper(
     var threshold: Float = THRESHOLD_DEFAULT,
@@ -87,7 +90,24 @@ class ObjectDetectorHelper(
             else -> "efficientdet-lite0.tflite"
         }
 
+        // load model
         baseOptionsBuilder.setModelAssetPath(modelName)
+
+        // decripsi model
+//        val decryptedFile = decryptModelToTempFile(context, "efficientdet_lite2_cengkeh_V2.enc")
+//        if (decryptedFile == null) {
+//            Log.e(TAG, "Failed to decrypt model")
+//            return
+//        }
+//
+//        val fileInputStream = FileInputStream(decryptedFile)
+//        val fileChannel = fileInputStream.channel
+//        val mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, decryptedFile.length())
+//        fileInputStream.close()
+//
+//        val modelBytes = decryptedFile.readBytes()
+
+//        baseOptionsBuilder.setModelAssetBuffer(mappedByteBuffer)
 
         // Check if runningMode is consistent with objectDetectorListener
         when (runningMode) {

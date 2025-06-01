@@ -31,6 +31,7 @@ android {
         versionName "1.0.0"
 
         buildConfigField "String", "API_KEY", "\"${project.property("API_KEY")}\""
+        buildConfigField "String", "MODEL_KEY", "\"${project.property("MODEL_KEY")}\""
 
     }
 
