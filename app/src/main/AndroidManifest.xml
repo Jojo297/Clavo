@@ -44,6 +44,7 @@
 
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|screenSize"
             android:clearTaskOnLaunch="true"
             android:exported="true"
             android:icon="@drawable/logo_clavo"

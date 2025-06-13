@@ -12,7 +12,9 @@ import android.view.LayoutInflater
 import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -123,6 +125,49 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
         super.onViewCreated(view, savedInstanceState)
 //        Toast.makeText(context, "onViewCreated dipanggil", Toast.LENGTH_SHORT).show()
 
+        // Inisialisasi view
+        val textureView = view.findViewById<AspectRatioTextureView>(R.id.textureView)
+        val cameraContainer = view.findViewById<FrameLayout>(R.id.webcam_container)
+
+        // Deteksi perubahan orientasi
+        view.viewTreeObserver.addOnGlobalLayoutListener {
+            val orientation = resources.configuration.orientation
+            val displayMetrics = resources.displayMetrics
+
+            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                // Landscape mode - penuh lebar layar
+//                val params = cameraContainer.layoutParams as ConstraintLayout.LayoutParams
+//                params.dimensionRatio = null // Hapus aspect ratio constraint
+//                params.width = ConstraintLayout.LayoutParams.MATCH_PARENT
+//                params.height = ConstraintLayout.LayoutParams.MATCH_PARENT
+//                cameraContainer.layoutParams = params
+//
+//                textureView.setAspectRatio(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT)
+
+                // Landscape mode - lebarkan 70% dari lebar layar
+                val targetWidth = (displayMetrics.widthPixels * 0.7).toInt()
+                val targetHeight = (targetWidth * DEFAULT_PREVIEW_HEIGHT / DEFAULT_PREVIEW_WIDTH)
+
+                val params = cameraContainer.layoutParams as ConstraintLayout.LayoutParams
+                params.dimensionRatio = null
+                params.width = targetWidth
+                params.height = targetHeight
+                params.matchConstraintMaxWidth = displayMetrics.widthPixels // Batas maksimum
+                cameraContainer.layoutParams = params
+
+                textureView.setAspectRatio(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT)
+            } else {
+                // Portrait mode - 4:3 aspect ratio di tengah
+                val params = cameraContainer.layoutParams as ConstraintLayout.LayoutParams
+                params.dimensionRatio = "H,4:3" // Set aspect ratio 4:3 (height:width)
+                params.width = 0
+                params.height = 0
+                cameraContainer.layoutParams = params
+
+                textureView.setAspectRatio(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT)
+            }
+        }
+
         mUSBMonitor = USBMonitor(requireContext(), object : USBMonitor.OnDeviceConnectListener {
 
             override fun onAttach(device: UsbDevice) {
@@ -138,7 +183,6 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
                 activity?.runOnUiThread {
                     try {
 //                        Toast.makeText(context, "onConnect: mencoba membuka kamera", Toast.LENGTH_SHORT).show()
-
                         mUVCCamera = UVCCamera().apply {
                             open(controlBlock)
                             setPreviewSize(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT, UVCCamera.FRAME_FORMAT_MJPEG)

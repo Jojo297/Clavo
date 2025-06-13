@@ -186,15 +186,6 @@ class StreamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
         }
     }
 
-//    private val detectionRunnable = object : Runnable {
-//        override fun run() {
-//            if (isAdded && view != null) {
-//                captureAndDetect()
-//                handler.postDelayed(this, detectionInterval)
-//            }
-//        }
-//    }
-
     // Callback triggered if there is an error in detection
     override fun onError(error: String, errorCode: Int) {
         Log.e("StreamFragment", "Detection error: $error")
