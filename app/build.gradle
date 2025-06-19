@@ -29,6 +29,7 @@ android {
         targetSdkVersion 33
         versionCode 1
         versionName "1.0.0"
+
     }
 
     dataBinding {
@@ -48,6 +49,9 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            debuggable false
+            minifyEnabled false
         }
     }
 
@@ -125,6 +129,5 @@ dependencies {
 
     // USB Webcam
     implementation 'com.github.jiangdongguo:AndroidUSBCamera:3.3.3'
-
 
 }

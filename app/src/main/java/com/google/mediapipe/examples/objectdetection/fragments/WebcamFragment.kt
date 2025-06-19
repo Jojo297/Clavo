@@ -1,31 +1,50 @@
 package com.google.mediapipe.examples.objectdetection.fragments
 
+import android.app.AlertDialog
+import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.hardware.usb.UsbDevice
 import android.os.Bundle
+import android.provider.MediaStore.Images.Media.getBitmap
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Surface
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.google.mediapipe.examples.objectdetection.ObjectDetectorHelper
+import com.google.mediapipe.examples.objectdetection.OverlayView
 import com.google.mediapipe.examples.objectdetection.R
 import com.google.mediapipe.examples.objectdetection.databinding.FragmentWebcamBinding
+import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.jiangdg.ausbc.MultiCameraClient
 import com.jiangdg.ausbc.callback.ICameraStateCallBack
 import com.jiangdg.ausbc.callback.IDeviceConnectCallBack
+import com.jiangdg.ausbc.utils.ToastUtils.show
 import com.jiangdg.ausbc.widget.AspectRatioTextureView
 import com.jiangdg.ausbc.widget.IAspectRatio
 import com.jiangdg.usb.USBMonitor
 import com.jiangdg.uvc.UVCCamera
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 
-class WebcamFragment : Fragment() {
+class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
     private lateinit var mUVCCameraView: AspectRatioTextureView
     private lateinit var mUSBMonitor: USBMonitor
     private var mUVCCamera: UVCCamera? = null
 
-    // resulotion default webcam
+    private lateinit var overlay: OverlayView
+    private lateinit var objectDetectorHelper: ObjectDetectorHelper
+
     private val DEFAULT_PREVIEW_WIDTH = 640
     private val DEFAULT_PREVIEW_HEIGHT = 480
 
@@ -34,17 +53,125 @@ class WebcamFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_webcam, container, false)
+
+        // dialog how to use webcam
+        AlertDialog.Builder(requireContext())
+            .setTitle("Gunakan Webcam")
+            .setMessage(
+                "1. Pastikan webcam sudah tersambung\n\n" +
+                        "2. Pastikan memilih transfer file\n\n" +
+                        "3. Jika muncul dialog izin, tekan oke"
+            )
+            .setIcon(R.drawable.webcam)
+            .setPositiveButton("Saya Mengerti") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setCancelable(false)
+            .create()
+            .apply {
+                show()
+                getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.mp_primary)
+                )
+            }
+
+        overlay = view.findViewById(R.id.overlay)
         mUVCCameraView = view.findViewById(R.id.textureView)
+
+        objectDetectorHelper = ObjectDetectorHelper(
+            context = requireContext(),
+            runningMode = RunningMode.LIVE_STREAM,
+            objectDetectorListener = this
+        )
+        overlay.setRunningMode(RunningMode.LIVE_STREAM)
+
         return view
     }
 
+    private val detectionInterval = 150L
+    private var detectionJob: Job? = null
+
+    private fun startRealTimeDetection() {
+//        Toast.makeText(context, "startRealTimeDetection dipanggil", Toast.LENGTH_SHORT).show()
+
+        detectionJob?.cancel()
+        detectionJob = lifecycleScope.launch {
+            while (isActive) {
+                detectFromWebcam()
+                delay(detectionInterval)
+            }
+        }
+    }
+
+    private fun detectFromWebcam() {
+//        Toast.makeText(context, "detectFromWebcam dipanggil", Toast.LENGTH_SHORT).show()
+
+        val bitmap = try {
+            mUVCCameraView.getBitmap()?.let { frame ->
+                Bitmap.createScaledBitmap(frame, 384, 384, true)
+            }
+        } catch (e: Exception) {
+            Toast.makeText(context, "Error di detectFromWebcam: ${e.message}", Toast.LENGTH_SHORT).show()
+            null
+        }
+
+        bitmap?.let {
+            objectDetectorHelper.detectFromBitmap(it, getDeviceRotation())
+        }
+    }
+
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+//        Toast.makeText(context, "onViewCreated dipanggil", Toast.LENGTH_SHORT).show()
+
+        // Inisialisasi view
+        val textureView = view.findViewById<AspectRatioTextureView>(R.id.textureView)
+        val cameraContainer = view.findViewById<FrameLayout>(R.id.webcam_container)
+
+        // Deteksi perubahan orientasi
+        view.viewTreeObserver.addOnGlobalLayoutListener {
+            val orientation = resources.configuration.orientation
+            val displayMetrics = resources.displayMetrics
+
+            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                // Landscape mode - penuh lebar layar
+//                val params = cameraContainer.layoutParams as ConstraintLayout.LayoutParams
+//                params.dimensionRatio = null // Hapus aspect ratio constraint
+//                params.width = ConstraintLayout.LayoutParams.MATCH_PARENT
+//                params.height = ConstraintLayout.LayoutParams.MATCH_PARENT
+//                cameraContainer.layoutParams = params
+//
+//                textureView.setAspectRatio(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT)
+
+                // Landscape mode - lebarkan 70% dari lebar layar
+                val targetWidth = (displayMetrics.widthPixels * 0.7).toInt()
+                val targetHeight = (targetWidth * DEFAULT_PREVIEW_HEIGHT / DEFAULT_PREVIEW_WIDTH)
+
+                val params = cameraContainer.layoutParams as ConstraintLayout.LayoutParams
+                params.dimensionRatio = null
+                params.width = targetWidth
+                params.height = targetHeight
+                params.matchConstraintMaxWidth = displayMetrics.widthPixels // Batas maksimum
+                cameraContainer.layoutParams = params
+
+                textureView.setAspectRatio(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT)
+            } else {
+                // Portrait mode - 4:3 aspect ratio di tengah
+                val params = cameraContainer.layoutParams as ConstraintLayout.LayoutParams
+                params.dimensionRatio = "H,4:3" // Set aspect ratio 4:3 (height:width)
+                params.width = 0
+                params.height = 0
+                cameraContainer.layoutParams = params
+
+                textureView.setAspectRatio(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT)
+            }
+        }
 
         mUSBMonitor = USBMonitor(requireContext(), object : USBMonitor.OnDeviceConnectListener {
 
             override fun onAttach(device: UsbDevice) {
-                Log.d("Webcam", "Device attached: ${device.deviceName}")
+                Toast.makeText(context, "Device attached: ${device.deviceName}", Toast.LENGTH_SHORT).show()
                 mUSBMonitor.requestPermission(device)
             }
 
@@ -55,54 +182,86 @@ class WebcamFragment : Fragment() {
             ) {
                 activity?.runOnUiThread {
                     try {
+//                        Toast.makeText(context, "onConnect: mencoba membuka kamera", Toast.LENGTH_SHORT).show()
                         mUVCCamera = UVCCamera().apply {
                             open(controlBlock)
-                                setPreviewSize(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT,
-                                    UVCCamera.FRAME_FORMAT_MJPEG)
-                                setPreviewTexture(mUVCCameraView.surfaceTexture)
-                                startPreview()
-                                Log.d("Webcam", "Preview started with MJPEG")
+                            setPreviewSize(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT, UVCCamera.FRAME_FORMAT_MJPEG)
+                            setPreviewTexture(mUVCCameraView.surfaceTexture)
+                            startPreview()
                         }
+
+//                        Toast.makeText(context, "Preview dimulai", Toast.LENGTH_SHORT).show()
                     } catch (e: Exception) {
-                        Log.e("Webcam", "Failed to start camera", e)
-                        Toast.makeText(context, "Failed to start camera: ${e.message}",
-                            Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "Gagal membuka kamera: ${e.message}", Toast.LENGTH_LONG).show()
                     }
                 }
             }
 
             override fun onDisconnect(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?) {
+                Toast.makeText(context, "Camera disconnected", Toast.LENGTH_SHORT).show()
                 mUVCCamera?.stopPreview()
                 mUVCCamera?.destroy()
                 mUVCCamera = null
-                Log.d("Webcam", "Camera disconnected")
             }
 
             override fun onDetach(device: UsbDevice?) {
-                Log.d("Webcam", "Device detached")
                 Toast.makeText(context, "Webcam dicabut", Toast.LENGTH_SHORT).show()
             }
 
             override fun onCancel(device: UsbDevice?) {
-                Log.d("Webcam", "Permission cancelled")
                 Toast.makeText(context, "Izin USB ditolak", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
+    // Get device rotation to pass to the detector
+    private fun getDeviceRotation(): Int {
+        return when (resources.configuration.orientation) {
+            Configuration.ORIENTATION_LANDSCAPE -> 90
+            else -> 0
+        }
+    }
+
+    override fun onResults(resultBundle: ObjectDetectorHelper.ResultBundle) {
+        activity?.runOnUiThread {
+            try {
+                val result = resultBundle.results.firstOrNull() ?: return@runOnUiThread
+
+                overlay.setResults(
+                    result,
+                    resultBundle.inputImageHeight,
+                    resultBundle.inputImageWidth,
+                    resultBundle.inputImageRotation
+                )
+//                Toast.makeText(requireContext(), "Terdeteksi", Toast.LENGTH_SHORT).show()
+
+            } catch (e: Exception) {
+                // Tangkap kesalahan, tampilkan toast
+                Toast.makeText(requireContext(), "Error saat proses hasil deteksi: ${e.message}", Toast.LENGTH_SHORT).show()
+                e.printStackTrace() // Optional, untuk debugging jika Logcat aktif
+            }
+        }
+    }
+
+    override fun onError(error: String, errorCode: Int) {
+        Toast.makeText(context, "Terjadi kesalahan: $error ($errorCode)", Toast.LENGTH_SHORT).show()
+    }
+
     override fun onStart() {
         super.onStart()
+//        Toast.makeText(context, "onStart dipanggil", Toast.LENGTH_SHORT).show()
         mUSBMonitor.register()
-        Log.d("Webcam", "USBMonitor registered")
+        startRealTimeDetection()
     }
 
     override fun onStop() {
         super.onStop()
+//        Toast.makeText(context, "onStop dipanggil", Toast.LENGTH_SHORT).show()
         mUSBMonitor.unregister()
         mUVCCamera?.stopPreview()
         mUVCCamera?.destroy()
+        detectionJob?.cancel()
         mUVCCamera = null
-        Log.d("Webcam", "USBMonitor unregistered")
     }
 }
 
