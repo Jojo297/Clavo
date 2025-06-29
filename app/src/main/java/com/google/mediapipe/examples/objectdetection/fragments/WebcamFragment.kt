@@ -14,10 +14,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
+import android.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.mediapipe.examples.objectdetection.ObjectDetectorHelper
 import com.google.mediapipe.examples.objectdetection.OverlayView
 import com.google.mediapipe.examples.objectdetection.R
@@ -108,10 +110,12 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
 
         }
 
-
         // Inisialisasi view
         val textureView = view.findViewById<AspectRatioTextureView>(R.id.textureView)
         val cameraContainer = view.findViewById<FrameLayout>(R.id.webcam_container)
+
+        val bottomNavigationView = requireActivity().findViewById<BottomNavigationView>(R.id.navigation)
+        val toolbarView = requireActivity().findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
 
         // Deteksi perubahan orientasi
         view.viewTreeObserver.addOnGlobalLayoutListener {
@@ -120,7 +124,7 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
 
             if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
                 // Landscape mode - lebarkan 70% dari lebar layar
-                val targetWidth = (displayMetrics.widthPixels * 0.7).toInt()
+                val targetWidth = (displayMetrics.widthPixels * 0.8).toInt()
                 val targetHeight = (targetWidth * DEFAULT_PREVIEW_HEIGHT / DEFAULT_PREVIEW_WIDTH)
 
                 val params = cameraContainer.layoutParams as ConstraintLayout.LayoutParams
@@ -131,6 +135,11 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
                 cameraContainer.layoutParams = params
 
                 textureView.setAspectRatio(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT)
+
+                // Sembunyikan bottom nav
+                bottomNavigationView.visibility = View.GONE
+                toolbarView.visibility = View.GONE
+
             } else {
                 // Portrait mode - 4:3 aspect ratio di tengah
                 val params = cameraContainer.layoutParams as ConstraintLayout.LayoutParams
@@ -196,27 +205,6 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
             else -> 0
         }
     }
-
-//    override fun onResults(resultBundle: ObjectDetectorHelper.ResultBundle) {
-//        activity?.runOnUiThread {
-//            try {
-//                val result = resultBundle.results.firstOrNull() ?: return@runOnUiThread
-//
-//                overlay.setResults(
-//                    result,
-//                    resultBundle.inputImageHeight,
-//                    resultBundle.inputImageWidth,
-//                    resultBundle.inputImageRotation
-//                )
-////                Toast.makeText(requireContext(), "Terdeteksi", Toast.LENGTH_SHORT).show()
-//
-//            } catch (e: Exception) {
-//                // Tangkap kesalahan, tampilkan toast
-//                Toast.makeText(requireContext(), "Error saat proses hasil deteksi: ${e.message}", Toast.LENGTH_SHORT).show()
-//                e.printStackTrace() // Optional, untuk debugging jika Logcat aktif
-//            }
-//        }
-//    }
 
     override fun onResults(resultBundle: ObjectDetectorHelper.ResultBundle) {
         activity?.runOnUiThread {
