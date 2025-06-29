@@ -54,36 +54,8 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
     ): View {
         val view = inflater.inflate(R.layout.fragment_webcam, container, false)
 
-        // dialog how to use webcam
-        AlertDialog.Builder(requireContext())
-            .setTitle("Gunakan Webcam")
-            .setMessage(
-                "1. Pastikan webcam sudah tersambung\n\n" +
-                        "2. Pastikan memilih transfer file\n\n" +
-                        "3. Jika muncul dialog izin, tekan oke"
-            )
-            .setIcon(R.drawable.webcam)
-            .setPositiveButton("Saya Mengerti") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setCancelable(false)
-            .create()
-            .apply {
-                show()
-                getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(
-                    ContextCompat.getColor(requireContext(), R.color.mp_primary)
-                )
-            }
-
         overlay = view.findViewById(R.id.overlay)
         mUVCCameraView = view.findViewById(R.id.textureView)
-
-        objectDetectorHelper = ObjectDetectorHelper(
-            context = requireContext(),
-            runningMode = RunningMode.LIVE_STREAM,
-            objectDetectorListener = this
-        )
-        overlay.setRunningMode(RunningMode.LIVE_STREAM)
 
         return view
     }
@@ -125,6 +97,18 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
         super.onViewCreated(view, savedInstanceState)
 //        Toast.makeText(context, "onViewCreated dipanggil", Toast.LENGTH_SHORT).show()
 
+        if (isAdded && context != null) {
+            objectDetectorHelper = ObjectDetectorHelper(
+                context = requireContext(),
+                runningMode = RunningMode.LIVE_STREAM,
+                objectDetectorListener = this
+            )
+            overlay.setRunningMode(RunningMode.LIVE_STREAM)
+
+
+        }
+
+
         // Inisialisasi view
         val textureView = view.findViewById<AspectRatioTextureView>(R.id.textureView)
         val cameraContainer = view.findViewById<FrameLayout>(R.id.webcam_container)
@@ -135,15 +119,6 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
             val displayMetrics = resources.displayMetrics
 
             if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                // Landscape mode - penuh lebar layar
-//                val params = cameraContainer.layoutParams as ConstraintLayout.LayoutParams
-//                params.dimensionRatio = null // Hapus aspect ratio constraint
-//                params.width = ConstraintLayout.LayoutParams.MATCH_PARENT
-//                params.height = ConstraintLayout.LayoutParams.MATCH_PARENT
-//                cameraContainer.layoutParams = params
-//
-//                textureView.setAspectRatio(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT)
-
                 // Landscape mode - lebarkan 70% dari lebar layar
                 val targetWidth = (displayMetrics.widthPixels * 0.7).toInt()
                 val targetHeight = (targetWidth * DEFAULT_PREVIEW_HEIGHT / DEFAULT_PREVIEW_WIDTH)
@@ -222,6 +197,27 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
         }
     }
 
+//    override fun onResults(resultBundle: ObjectDetectorHelper.ResultBundle) {
+//        activity?.runOnUiThread {
+//            try {
+//                val result = resultBundle.results.firstOrNull() ?: return@runOnUiThread
+//
+//                overlay.setResults(
+//                    result,
+//                    resultBundle.inputImageHeight,
+//                    resultBundle.inputImageWidth,
+//                    resultBundle.inputImageRotation
+//                )
+////                Toast.makeText(requireContext(), "Terdeteksi", Toast.LENGTH_SHORT).show()
+//
+//            } catch (e: Exception) {
+//                // Tangkap kesalahan, tampilkan toast
+//                Toast.makeText(requireContext(), "Error saat proses hasil deteksi: ${e.message}", Toast.LENGTH_SHORT).show()
+//                e.printStackTrace() // Optional, untuk debugging jika Logcat aktif
+//            }
+//        }
+//    }
+
     override fun onResults(resultBundle: ObjectDetectorHelper.ResultBundle) {
         activity?.runOnUiThread {
             try {
@@ -233,15 +229,15 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
                     resultBundle.inputImageWidth,
                     resultBundle.inputImageRotation
                 )
-//                Toast.makeText(requireContext(), "Terdeteksi", Toast.LENGTH_SHORT).show()
-
             } catch (e: Exception) {
-                // Tangkap kesalahan, tampilkan toast
-                Toast.makeText(requireContext(), "Error saat proses hasil deteksi: ${e.message}", Toast.LENGTH_SHORT).show()
-                e.printStackTrace() // Optional, untuk debugging jika Logcat aktif
+                context?.let {
+                    Toast.makeText(it, "Error saat proses hasil deteksi: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
+
+
 
     override fun onError(error: String, errorCode: Int) {
         Toast.makeText(context, "Terjadi kesalahan: $error ($errorCode)", Toast.LENGTH_SHORT).show()
@@ -249,20 +245,40 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
 
     override fun onStart() {
         super.onStart()
-//        Toast.makeText(context, "onStart dipanggil", Toast.LENGTH_SHORT).show()
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Gunakan Webcam")
+            .setMessage(
+                "1. Pastikan webcam sudah tersambung\n\n" +
+                        "2. Pastikan memilih transfer file\n\n" +
+                        "3. Jika muncul dialog izin, tekan oke"
+            )
+            .setIcon(R.drawable.webcam)
+            .setPositiveButton("Saya Mengerti") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setCancelable(false)
+            .create()
+            .apply {
+                show()
+                getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.mp_primary)
+                )
+            }
+
         mUSBMonitor.register()
         startRealTimeDetection()
     }
 
     override fun onStop() {
         super.onStop()
-//        Toast.makeText(context, "onStop dipanggil", Toast.LENGTH_SHORT).show()
         mUSBMonitor.unregister()
         mUVCCamera?.stopPreview()
         mUVCCamera?.destroy()
         detectionJob?.cancel()
         mUVCCamera = null
     }
+
 }
 
 

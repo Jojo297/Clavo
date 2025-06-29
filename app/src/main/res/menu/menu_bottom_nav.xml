@@ -15,10 +15,10 @@
     ~ limitations under the License.
 -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@id/camera_fragment"
-        android:icon="@drawable/ic_baseline_photo_camera_24"
-        android:title="@string/menu_camera" />
+<!--    <item-->
+<!--        android:id="@id/camera_fragment"-->
+<!--        android:icon="@drawable/ic_baseline_photo_camera_24"-->
+<!--        android:title="@string/menu_camera" />-->
 
     <item
         android:id="@id/webcam_fragment"
@@ -30,8 +30,8 @@
         android:icon="@drawable/icons8_motherboard_24"
         android:title="@string/clavo_hardware" />
 
-    <item
-        android:id="@id/gallery_fragment"
-        android:icon="@drawable/ic_baseline_photo_library_24"
-        android:title="@string/menu_gallery" />
+<!--    <item-->
+<!--        android:id="@id/gallery_fragment"-->
+<!--        android:icon="@drawable/ic_baseline_photo_library_24"-->
+<!--        android:title="@string/menu_gallery" />-->
 </menu>

@@ -1,0 +1,22 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Shadow layer (top shadow) -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#33000000"
+            android:endColor="@android:color/transparent"
+            android:angle="90" /> <!-- shadow ke bawah -->
+        </shape>
+    </item>
+
+    <!-- Rounded corners + white background -->
+    <item android:top="5dp"> <!-- shift a bit so shadow visible -->
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/white" />
+            <corners android:topLeftRadius="16dp" android:topRightRadius="16dp" />
+        </shape>
+    </item>
+
+</layer-list>
+

@@ -1,5 +1,7 @@
 package com.google.mediapipe.examples.objectdetection.fragments
 
+import android.app.AlertDialog
+import com.jiangdg.ausbc.utils.ToastUtils.show
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -16,10 +18,12 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
+import androidx.core.content.ContextCompat
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.mediapipe.examples.objectdetection.ObjectDetectorHelper
+import com.google.mediapipe.examples.objectdetection.R
 import com.google.mediapipe.examples.objectdetection.databinding.FragmentStreamBinding
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.core.BaseOptions
@@ -61,6 +65,28 @@ class StreamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentStreamBinding.inflate(inflater, container, false)
+
+        // dialog how to use
+        AlertDialog.Builder(requireContext())
+            .setTitle("🔌 Hubungkan Clavo Hardware")
+            .setMessage(
+                "1. Nyalakan perangkat Clavo Hardware\n\n" +
+                        "2. Sambungkan ke jaringan WiFi bernama \"Clavo Hardware\"\n\n" +
+                        "3. Kembali ke aplikasi ini untuk melanjutkan"
+            )
+            .setIcon(R.drawable.ic_wifi)
+            .setPositiveButton("Saya Mengerti") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setCancelable(false)
+            .create()
+            .apply {
+                show()
+                getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.mp_primary)
+                )
+            }
+
         setupObjectDetector()
         setupMjpegView()
         setupOverlayView()
@@ -160,43 +186,39 @@ class StreamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
         }
     }
 
-//    private val detectionRunnable = object : Runnable {
-//        override fun run() {
-//            if (isAdded && view != null) {
-//                captureAndDetect()
-//                handler.postDelayed(this, detectionInterval)
-//            }
-//        }
-//    }
-
     // Callback triggered if there is an error in detection
     override fun onError(error: String, errorCode: Int) {
         Log.e("StreamFragment", "Detection error: $error")
     }
 
-    // Stop detection and stream when fragment is paused
     override fun onPause() {
         super.onPause()
         detectionJob?.cancel()
-        binding.mjpegView.stopStream()
+        binding?.mjpegView?.stopStream()
     }
 
-    // Resume detection and stream when fragment becomes active again
     override fun onResume() {
         super.onResume()
-        if (::objectDetectorHelper.isInitialized) {
-            binding.mjpegView.startStream()
-            startRealTimeDetection()
+
+        if (!isAdded || _binding == null || !this::objectDetectorHelper.isInitialized) {
+            return
         }
+
+        binding?.mjpegView?.startStream()
+        startRealTimeDetection()
     }
 
-    // Clean up resources when fragment is destroyed
+
     override fun onDestroyView() {
-        super.onDestroyView()
         detectionJob?.cancel()
-        objectDetectorHelper.clearObjectDetector()
+        binding?.mjpegView?.stopStream()
+        if (this::objectDetectorHelper.isInitialized) {
+            objectDetectorHelper.clearObjectDetector()
+        }
         _binding = null
+        super.onDestroyView()
     }
+
 }
 
 // Extension function to capture a bitmap from MjpegView
