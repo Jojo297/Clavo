@@ -69,7 +69,7 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
 //        Toast.makeText(context, "startRealTimeDetection dipanggil", Toast.LENGTH_SHORT).show()
 
         detectionJob?.cancel()
-        detectionJob = lifecycleScope.launch {
+        detectionJob = viewLifecycleOwner.lifecycleScope.launch  {
             while (isActive) {
                 detectFromWebcam()
                 delay(detectionInterval)
@@ -85,8 +85,14 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
                 Bitmap.createScaledBitmap(frame, 384, 384, true)
             }
         } catch (e: Exception) {
-            Toast.makeText(context, "Error di detectFromWebcam: ${e.message}", Toast.LENGTH_SHORT).show()
-            null
+            context?.let {
+                Toast.makeText(
+                    context,
+                    "Error di detectFromWebcam: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+                null
+            }
         }
 
         bitmap?.let {
@@ -99,15 +105,13 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
         super.onViewCreated(view, savedInstanceState)
 //        Toast.makeText(context, "onViewCreated dipanggil", Toast.LENGTH_SHORT).show()
 
-        if (isAdded && context != null) {
+        context?.let { safeContext ->
             objectDetectorHelper = ObjectDetectorHelper(
-                context = requireContext(),
+                context = safeContext,
                 runningMode = RunningMode.LIVE_STREAM,
                 objectDetectorListener = this
             )
             overlay.setRunningMode(RunningMode.LIVE_STREAM)
-
-
         }
 
         // Inisialisasi view
@@ -119,44 +123,55 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
 
         // Deteksi perubahan orientasi
         view.viewTreeObserver.addOnGlobalLayoutListener {
-            val orientation = resources.configuration.orientation
-            val displayMetrics = resources.displayMetrics
+            context?.let { safeContext ->
+//            val orientation = resources.configuration.orientation
+                val orientation = context?.resources?.configuration?.orientation
+                val displayMetrics = resources.displayMetrics
 
-            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                // Landscape mode - lebarkan 70% dari lebar layar
-                val targetWidth = (displayMetrics.widthPixels * 0.8).toInt()
-                val targetHeight = (targetWidth * DEFAULT_PREVIEW_HEIGHT / DEFAULT_PREVIEW_WIDTH)
+                if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    // Landscape mode - lebarkan 70% dari lebar layar
+                    val targetWidth = (displayMetrics.widthPixels * 0.8).toInt()
+                    val targetHeight =
+                        (targetWidth * DEFAULT_PREVIEW_HEIGHT / DEFAULT_PREVIEW_WIDTH)
 
-                val params = cameraContainer.layoutParams as ConstraintLayout.LayoutParams
-                params.dimensionRatio = null
-                params.width = targetWidth
-                params.height = targetHeight
-                params.matchConstraintMaxWidth = displayMetrics.widthPixels // Batas maksimum
-                cameraContainer.layoutParams = params
+                    val params = cameraContainer.layoutParams as ConstraintLayout.LayoutParams
+                    params.dimensionRatio = null
+                    params.width = targetWidth
+                    params.height = targetHeight
+                    params.matchConstraintMaxWidth = displayMetrics.widthPixels // Batas maksimum
+                    cameraContainer.layoutParams = params
 
-                textureView.setAspectRatio(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT)
+                    textureView.setAspectRatio(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT)
 
-                // Sembunyikan bottom nav
-                bottomNavigationView.visibility = View.GONE
-                toolbarView.visibility = View.GONE
+                    // Sembunyikan bottom nav
+                    bottomNavigationView.visibility = View.GONE
+                    toolbarView.visibility = View.GONE
 
-            } else {
-                // Portrait mode - 4:3 aspect ratio di tengah
-                val params = cameraContainer.layoutParams as ConstraintLayout.LayoutParams
-                params.dimensionRatio = "H,4:3" // Set aspect ratio 4:3 (height:width)
-                params.width = 0
-                params.height = 0
-                cameraContainer.layoutParams = params
+                } else {
+                    // Portrait mode - 4:3 aspect ratio di tengah
+                    val params = cameraContainer.layoutParams as ConstraintLayout.LayoutParams
+                    params.dimensionRatio = "H,4:3" // Set aspect ratio 4:3 (height:width)
+                    params.width = 0
+                    params.height = 0
+                    cameraContainer.layoutParams = params
 
-                textureView.setAspectRatio(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT)
+                    textureView.setAspectRatio(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT)
+                }
             }
         }
 
+        context?.let { ctx ->
         mUSBMonitor = USBMonitor(requireContext(), object : USBMonitor.OnDeviceConnectListener {
 
             override fun onAttach(device: UsbDevice) {
-                Toast.makeText(context, "Device attached: ${device.deviceName}", Toast.LENGTH_SHORT).show()
-                mUSBMonitor.requestPermission(device)
+                context?.let {
+                    Toast.makeText(
+                        context,
+                        "Device attached: ${device.deviceName}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                    mUSBMonitor.requestPermission(device)
             }
 
             override fun onConnect(
@@ -176,26 +191,39 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
 
 //                        Toast.makeText(context, "Preview dimulai", Toast.LENGTH_SHORT).show()
                     } catch (e: Exception) {
-                        Toast.makeText(context, "Gagal membuka kamera: ${e.message}", Toast.LENGTH_LONG).show()
+                        context?.let {
+                            Toast.makeText(
+                                context,
+                                "Gagal membuka kamera: ${e.message}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
             }
 
             override fun onDisconnect(device: UsbDevice?, ctrlBlock: USBMonitor.UsbControlBlock?) {
-                Toast.makeText(context, "Camera disconnected", Toast.LENGTH_SHORT).show()
-                mUVCCamera?.stopPreview()
+                context?.let {
+                    Toast.makeText(context, "Camera disconnected", Toast.LENGTH_SHORT).show()
+                }
+                    mUVCCamera?.stopPreview()
                 mUVCCamera?.destroy()
                 mUVCCamera = null
             }
 
             override fun onDetach(device: UsbDevice?) {
+                context?.let {
                 Toast.makeText(context, "Webcam dicabut", Toast.LENGTH_SHORT).show()
+                }
             }
 
             override fun onCancel(device: UsbDevice?) {
-                Toast.makeText(context, "Izin USB ditolak", Toast.LENGTH_SHORT).show()
+                context?.let {
+                    Toast.makeText(context, "Izin USB ditolak", Toast.LENGTH_SHORT).show()
+                }
             }
         })
+        }
     }
 
     // Get device rotation to pass to the detector
@@ -228,31 +256,36 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
 
 
     override fun onError(error: String, errorCode: Int) {
-        Toast.makeText(context, "Terjadi kesalahan: $error ($errorCode)", Toast.LENGTH_SHORT).show()
+        context?.let {
+            Toast.makeText(context, "Terjadi kesalahan: $error ($errorCode)", Toast.LENGTH_SHORT)
+                .show()
+        }
     }
 
     override fun onStart() {
         super.onStart()
 
-        AlertDialog.Builder(requireContext())
-            .setTitle("Gunakan Webcam")
-            .setMessage(
-                "1. Pastikan webcam sudah tersambung\n\n" +
-                        "2. Pastikan memilih transfer file\n\n" +
-                        "3. Jika muncul dialog izin, tekan oke"
-            )
-            .setIcon(R.drawable.webcam)
-            .setPositiveButton("Saya Mengerti") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setCancelable(false)
-            .create()
-            .apply {
-                show()
-                getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(
-                    ContextCompat.getColor(requireContext(), R.color.mp_primary)
+        context?.let { ctx ->
+            AlertDialog.Builder(ctx)
+                .setTitle("Gunakan Webcam")
+                .setMessage(
+                    "1. Pastikan webcam sudah tersambung\n\n" +
+                            "2. Pastikan memilih transfer file\n\n" +
+                            "3. Jika muncul dialog izin, tekan oke"
                 )
-            }
+                .setIcon(R.drawable.webcam)
+                .setPositiveButton("Saya Mengerti") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .setCancelable(false)
+                .create()
+                .apply {
+                    show()
+                    getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(
+                        ContextCompat.getColor(ctx, R.color.mp_primary)
+                    )
+                }
+        }
 
         mUSBMonitor.register()
         startRealTimeDetection()
@@ -266,6 +299,16 @@ class WebcamFragment : Fragment(), ObjectDetectorHelper.DetectorListener {
         detectionJob?.cancel()
         mUVCCamera = null
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        mUSBMonitor.unregister()
+        mUVCCamera?.stopPreview()
+        mUVCCamera?.destroy()
+        detectionJob?.cancel()
+        mUVCCamera = null
+    }
+
 
 }
 
