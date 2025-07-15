@@ -1,5 +1,7 @@
 # Clavo: Real-time Clove Ripeness Detection
 
+UI_Clavo.jpg
+
 Clavo is an Android application designed for real-time object detection, with a specialized focus on determining the ripeness of cloves. The application leverages TensorFlow Lite and MediaPipe to perform on-device inference, providing a fast and efficient solution for agricultural analysis. It supports multiple input sources, making it a versatile tool for both field and lab use.
 
 ## Key Features
