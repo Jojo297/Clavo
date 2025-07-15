@@ -12,7 +12,7 @@ Clavo is an Android application designed for real-time object detection, with a 
 *   **Real-Time Inference:** Performs object detection on-device for immediate results.
 *   **Multiple Input Modes:**
     *   **Live Camera:** Uses the device's built-in camera for live detection.
-    *   **Clavo Hardware (ESP32):** Connects to a live MJPEG stream from custom hardware for remote monitoring.
+    *   **Clavo Hardware (ESP32 S3):** Connects to a live MJPEG stream from custom hardware for remote monitoring.
     *   **External Webcam:** Supports USB webcams for flexible camera placement.
 *   **Visual Feedback:** Overlays bounding boxes and confidence scores on the detected objects.
 
